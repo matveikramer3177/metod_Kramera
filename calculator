@@ -19,17 +19,13 @@ public class LinearEquationSolver
 
         for (int col = 0; col < n; col++)
         {
-            // Заменяем col-й столбец на вектор b
             for (int row = 0; row < n; row++)
                 tempMatrix[row][col] = vector[row];
 
-            // Считаем определитель новой матрицы
             double detAi = Determinant(tempMatrix);
 
-            // Находим решение xi
             solution[col] = detAi / detA;
 
-            // Восстанавливаем оригинальную матрицу для следующего цикла
             for (int row = 0; row < n; row++)
                 tempMatrix[row][col] = matrix[row][col];
         }
