@@ -1,0 +1,92 @@
+using System;
+
+public class LinearEquationSolver
+{
+    public static double[] SolveCramer(double[][] matrix, double[] vector)
+    {
+        int n = matrix.Length;
+
+        if (n != vector.Length || Array.Exists(matrix, row => row.Length != n))
+            throw new ArgumentException("Неверные размеры входных данных");
+
+        double detA = Determinant(matrix);
+        if (Math.Abs(detA) < 1e-10)
+            throw new InvalidOperationException("Определитель равен нулю — система не имеет однозначного решения");
+
+        double[][] tempMatrix = CloneMatrix(matrix);
+
+        double[] solution = new double[n];
+
+        for (int col = 0; col < n; col++)
+        {
+            // Заменяем col-й столбец на вектор b
+            for (int row = 0; row < n; row++)
+                tempMatrix[row][col] = vector[row];
+
+            // Считаем определитель новой матрицы
+            double detAi = Determinant(tempMatrix);
+
+            // Находим решение xi
+            solution[col] = detAi / detA;
+
+            // Восстанавливаем оригинальную матрицу для следующего цикла
+            for (int row = 0; row < n; row++)
+                tempMatrix[row][col] = matrix[row][col];
+        }
+
+        return solution;
+    }
+
+    private static double Determinant(double[][] matrix)
+    {
+        int n = matrix.Length;
+
+        if (n == 1)
+            return matrix[0][0];
+
+        if (n == 2)
+            return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+
+        double determinant = 0;
+        for (int col = 0; col < n; col++)
+        {
+            double[][] submatrix = GetSubmatrix(matrix, 0, col);
+            double sign = (col % 2 == 0) ? 1 : -1;
+            determinant += sign * matrix[0][col] * Determinant(submatrix);
+        }
+
+        return determinant;
+    }
+
+    private static double[][] GetSubmatrix(double[][] matrix, int excludeRow, int excludeCol)
+    {
+        int n = matrix.Length;
+        double[][] sub = new double[n - 1][];
+
+        for (int r = 0, sr = 0; r < n; r++)
+        {
+            if (r == excludeRow) continue;
+            sub[sr] = new double[n - 1];
+            for (int c = 0, sc = 0; c < n; c++)
+            {
+                if (c == excludeCol) continue;
+                sub[sr][sc++] = matrix[r][c];
+            }
+            sr++;
+        }
+
+        return sub;
+    }
+
+    private static double[][] CloneMatrix(double[][] matrix)
+    {
+        int n = matrix.Length;
+        double[][] clone = new double[n][];
+        for (int i = 0; i < n; i++)
+        {
+            clone[i] = new double[matrix[i].Length];
+            Array.Copy(matrix[i], clone[i], matrix[i].Length);
+        }
+        return clone;
+    }
+}
